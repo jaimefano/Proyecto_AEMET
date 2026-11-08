@@ -51,6 +51,14 @@ services:
       DB_NAME: ${MYSQL_DATABASE}
       DB_USER: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
+      # Recuperación de contraseña por email (ver SMTP_* en .env.example). Sin SMTP_HOST no se envían correos.
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SEGURIDAD: ${SMTP_SEGURIDAD:-tls}
+      SMTP_USUARIO: ${SMTP_USUARIO:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_REMITENTE: ${SMTP_REMITENTE:-}
     ports:
       - "8000:80"
     volumes:

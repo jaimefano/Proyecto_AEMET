@@ -1,0 +1,31 @@
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <h1 class="h3 mb-3">Darme de baja</h1>
+
+  {{#si errores}}
+    <div class="alert alert-danger" role="alert">
+      <ul class="mb-0">
+        {{#cada errores}}<li>{{.}}</li>{{/cada}}
+      </ul>
+    </div>
+  {{/si}}
+
+    {{#si ultimoAdmin}}
+      <div class="alert alert-warning" role="alert">
+        Eres el único administrador, así que no puedes darte de baja hasta que crees otro.
+      </div>
+    {{/si}}
+    {{#no ultimoAdmin}}
+      <p>Se eliminarán tu cuenta y toda tu información. <strong>No se puede deshacer.</strong> Escribe tu contraseña para confirmar.</p>
+      <form method="post" action="baja.php" data-confirmar="¿Seguro que quieres eliminar tu cuenta y todos tus datos?">
+        <input type="hidden" name="csrf" value="{{csrf}}">
+        <div class="mb-3">
+          <label for="password" class="form-label">Contraseña</label>
+          <input type="password" class="form-control" id="password" name="password" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-danger">Eliminar mi cuenta</button>
+        <a href="perfil.php" class="btn btn-link">Cancelar</a>
+      </form>
+    {{/no}}
+  </div>
+</div>

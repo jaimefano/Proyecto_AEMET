@@ -17,9 +17,17 @@
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item"><a class="nav-link" href="index.php">Inicio</a></li>
         {{#si usuario}}
-          <li class="nav-item"><span class="navbar-text me-3">{{usuario.nick}}</span></li>
+          <li class="nav-item"><a class="nav-link" href="perfil.php">Mi perfil</a></li>
+          {{#si esAdmin}}
+            <li class="nav-item"><a class="nav-link" href="administracion.php">Administración</a></li>
+          {{/si}}
+          <li class="nav-item"><span class="navbar-text mx-3">{{usuario.nick}}</span></li>
           <li class="nav-item"><a class="nav-link" href="logout.php">Cerrar sesión</a></li>
         {{/si}}
+        {{#no usuario}}
+          <li class="nav-item"><a class="nav-link" href="login.php">Iniciar sesión</a></li>
+          <li class="nav-item"><a class="nav-link" href="registro.php">Registrarse</a></li>
+        {{/no}}
       </ul>
     </div>
   </nav>
@@ -29,4 +37,7 @@
 <main class="container flex-grow-1 py-4">
   {{#si aviso}}
     <div class="alert alert-warning" role="alert">{{aviso}}</div>
+  {{/si}}
+  {{#si exito}}
+    <div class="alert alert-success" role="alert">{{exito}}</div>
   {{/si}}

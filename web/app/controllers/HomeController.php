@@ -1,12 +1,13 @@
 <?php
 declare(strict_types=1);
 
-// Página de inicio. De momento solo comprueba que la web llega a la base de datos;
-// se sustituirá por el login y el menú principal cuando exista la gestión de usuarios.
+// Página de inicio (privada: solo usuarios registrados). Muestra el menú principal y, de momento,
+// la lista de ciudades con datos, que es también una comprobación de la conexión con la base de datos.
 final class HomeController
 {
     public function index(): void
     {
+        Sesion::exigirIdentificado();
         $filas = [];
         $numCiudades = 0;
         $lecturas = 0;

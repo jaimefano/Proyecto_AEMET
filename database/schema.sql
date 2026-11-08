@@ -5,8 +5,6 @@
 -- NOTA: las columnas extra corresponden a campos del endpoint de valores
 -- climatológicos diarios de AEMET (tmed, velmedia, racha, dir, sol, presMax,
 -- presMin, hrMedia, hrMax, hrMin), verificados contra respuestas reales.
--- Todas las medidas admiten NULL: no todas las estaciones miden todo
--- (p. ej. Madrid y Barcelona no informan de sol; Barcelona tampoco de presión).
 -- =====================================================================
 
 CREATE DATABASE IF NOT EXISTS meteo_aemet
@@ -91,10 +89,28 @@ CREATE TABLE IF NOT EXISTS usuarios (
   rol              ENUM('registrado','administrador') NOT NULL DEFAULT 'registrado',
   fecha_alta       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id_usuario),
-  UNIQUE KEY uq_usuarios_nick (nick)
+  UNIQUE KEY uq_usuarios_nick (nick),
+  UNIQUE KEY uq_usuarios_email (email)   -- el email identifica al usuario en la recuperación de contraseña
 ) ENGINE=InnoDB;
 
--- Administrador por defecto (RQ11): usuario "pepe" y contraseña "pepe".
+-- Solicitudes de recuperación de contraseña. Se guarda solo el hash (SHA-256) del token que se envía
+-- por email, de modo que una filtración de la base de datos no permite restablecer contraseñas.
+-- Cada solicitud caduca (expira) y se borra al usarse; al eliminar al usuario se borran con él.
+-- Las fechas se guardan en UTC.
+CREATE TABLE IF NOT EXISTS recuperaciones_password (
+  id_recuperacion INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_usuario      INT UNSIGNED NOT NULL,
+  token_hash      CHAR(64)     NOT NULL,
+  creada          DATETIME     NOT NULL,
+  expira          DATETIME     NOT NULL,
+  PRIMARY KEY (id_recuperacion),
+  UNIQUE KEY uq_recuperaciones_token (token_hash),
+  KEY idx_recuperaciones_usuario (id_usuario),
+  CONSTRAINT fk_recuperaciones_usuario FOREIGN KEY (id_usuario)
+    REFERENCES usuarios (id_usuario) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Administrador por defecto (RQ11).
 -- El hash corresponde a la contraseña "pepe" (bcrypt, generado con password_hash).
 INSERT INTO usuarios (nick, password_hash, nombre, apellidos, fecha_nacimiento, telefono, email, rol)
 VALUES ('pepe', '$2y$10$E19.dn/mBuh33kqVWvnoGer8f8FnaMi.4ZWC0voLQcYPBQxv.8Eye',

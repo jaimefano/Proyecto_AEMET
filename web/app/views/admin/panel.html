@@ -1,0 +1,88 @@
+<h1 class="h3 mb-3">Administración</h1>
+
+<h2 class="h5">Usuarios</h2>
+<div class="table-responsive">
+  <table class="table table-striped table-sm align-middle">
+    <thead>
+      <tr>
+        <th>Usuario</th><th>Nombre</th><th>Email</th><th>Tipo</th><th>Edad</th><th>Alta</th><th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#cada usuarios}}
+        <tr>
+          <td>{{nick}}{{#si esYo}} <span class="badge text-bg-secondary">tú</span>{{/si}}</td>
+          <td>{{nombreCompleto}}</td>
+          <td>{{email}}</td>
+          <td>{{rol}}</td>
+          <td>{{edad}}</td>
+          <td>{{alta}}</td>
+          <td>
+            {{#si puedeEliminar}}
+              <form method="post" action="administracion.php" class="d-inline"
+                    data-confirmar="¿Eliminar a {{nick}} y toda su información? No se puede deshacer.">
+                <input type="hidden" name="csrf" value="{{csrf}}">
+                <input type="hidden" name="accion" value="eliminar">
+                <input type="hidden" name="id" value="{{id}}">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+              </form>
+            {{/si}}
+          </td>
+        </tr>
+      {{/cada}}
+    </tbody>
+  </table>
+</div>
+
+<h2 class="h5 mt-5">Crear administrador</h2>
+
+  {{#si errores}}
+    <div class="alert alert-danger" role="alert">
+      <ul class="mb-0">
+        {{#cada errores}}<li>{{.}}</li>{{/cada}}
+      </ul>
+    </div>
+  {{/si}}
+
+<form method="post" action="administracion.php">
+  <input type="hidden" name="csrf" value="{{csrf}}">
+  <input type="hidden" name="accion" value="crear_admin">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label for="nick" class="form-label">Nombre de usuario</label>
+      <input type="text" class="form-control" id="nick" name="nick" value="{{valores.nick}}"
+             minlength="3" maxlength="30" pattern="[A-Za-z0-9_.\-]+" required>
+    </div>
+    <div class="col-md-4">
+      <label for="password" class="form-label">Contraseña</label>
+      <input type="password" class="form-control" id="password" name="password" minlength="6" maxlength="72" data-password required>
+    </div>
+    <div class="col-md-4">
+      <label for="password2" class="form-label">Repite la contraseña</label>
+      <input type="password" class="form-control" id="password2" name="password2" data-password-repetir required>
+    </div>
+    <div class="col-md-4">
+      <label for="nombre" class="form-label">Nombre</label>
+      <input type="text" class="form-control" id="nombre" name="nombre" value="{{valores.nombre}}" maxlength="100" required>
+    </div>
+    <div class="col-md-4">
+      <label for="apellidos" class="form-label">Apellidos</label>
+      <input type="text" class="form-control" id="apellidos" name="apellidos" value="{{valores.apellidos}}" maxlength="150" required>
+    </div>
+    <div class="col-md-4">
+      <label for="email" class="form-label">Email</label>
+      <input type="email" class="form-control" id="email" name="email" value="{{valores.email}}" maxlength="255" required>
+    </div>
+    <div class="col-md-4">
+      <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
+      <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento"
+             value="{{valores.fecha_nacimiento}}" min="1900-01-01" max="{{hoy}}" required>
+    </div>
+    <div class="col-md-4">
+      <label for="telefono" class="form-label">Teléfono</label>
+      <input type="tel" class="form-control" id="telefono" name="telefono" value="{{valores.telefono}}"
+             pattern="\+?[0-9]{9,15}" required>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary mt-4">Crear administrador</button>
+</form>

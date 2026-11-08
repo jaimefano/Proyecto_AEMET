@@ -34,7 +34,8 @@ Temperatura máxima, mínima y media · Precipitación · Velocidad media, racha
 ├── docker-compose.yml       # MySQL 8.4, phpMyAdmin, web y ETL (diario) en Docker
 ├── .env.example             # Variables de entorno necesarias (copiar a .env y ajustar)
 ├── database/
-│   ├── schema.sql           # Esquema de la base de datos (ciudades, lecturas_diarias y usuarios)
+│   ├── schema.sql           # Esquema de la base de datos (ciudades, lecturas_diarias, usuarios y recuperaciones_password)
+│   ├── migraciones/         # Cambios de esquema para bases de datos ya creadas
 │   └── datos_aemet.sql      # Volcado completo (estructura + datos ya cargados) para importar tal cual
 ├── etl/                     # Carga de datos (Node.js)
 │   ├── Dockerfile           # Imagen del ETL
@@ -114,7 +115,32 @@ docker compose up -d --build
 # Web disponible en http://localhost:8000
 ```
 
-La página de inicio muestra, de momento, una comprobación de la conexión con la base de datos. El administrador por defecto es el usuario `pepe` (contraseña `pepe`), creado por `database/schema.sql`.
+### Funcionalidad de usuarios
+
+Todo el contenido es privado: sin sesión, cualquier página lleva al inicio de sesión.
+
+| Página | Qué hace |
+|---|---|
+| `registro.php` / `login.php` / `logout.php` | Alta de usuario (validación exhaustiva en navegador y servidor), inicio y cierre de sesión. La sesión caduca a los 5 minutos de inactividad. |
+| `recuperar.php` → `restablecer.php?token=…` | Recuperación de contraseña por email (ver abajo). |
+| `perfil.php` | Consultar y modificar los datos personales (con la edad calculada). |
+| `cambiar_password.php` | Cambiar la contraseña conociendo la actual. |
+| `baja.php` | Darse de baja: elimina la cuenta y toda su información (pide la contraseña). |
+| `administracion.php` | Solo administradores: crear administradores y eliminar usuarios o administradores. No se puede eliminar a uno mismo ni al último administrador. |
+
+El administrador por defecto es el usuario `pepe` (contraseña `pepe`), creado por `database/schema.sql`. Las contraseñas se guardan con hash bcrypt; las consultas son preparadas (PDO) y los formularios llevan token CSRF.
+
+### Recuperación de contraseña por email
+
+El usuario escribe su email en `recuperar.php` y recibe en su correo un enlace a `restablecer.php?token=…` donde elige la contraseña nueva. El enlace es aleatorio (256 bits), caduca a la hora y solo sirve una vez; en la base de datos solo se guarda su hash SHA-256. La respuesta es la misma exista o no el email, y no se reenvía otro correo hasta pasado un minuto. El email de cada usuario es único.
+
+El envío usa SMTP directamente (clase `Correo`, sin librerías externas) con STARTTLS o SSL y verificación del certificado. Hay que configurar en el `.env` (ver `.env.example`) el servidor SMTP. Con Gmail: activar la verificación en dos pasos, crear una *contraseña de aplicación* en <https://myaccount.google.com/apppasswords> y poner `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_SEGURIDAD=tls`, `SMTP_USUARIO` (la cuenta) y `SMTP_PASSWORD` (esa contraseña de aplicación). Después, `docker compose up -d` para que la web recoja las variables. Sin `SMTP_HOST` no se envía nada y el contenido del correo, con el enlace, queda en `docker compose logs web` (útil para probar).
+
+**Base de datos ya creada.** `schema.sql` solo se ejecuta al crear el volumen. Si ya lo tenías creado, aplica una vez la migración (añade el email único y la tabla `recuperaciones_password`), o recrea el volumen con `docker compose down -v`:
+
+```bash
+docker exec -i meteo_mysql mysql -umeteo -p meteo_aemet < database/migraciones/001_recuperacion_password.sql
+```
 
 ## Importar el volcado de datos (sin usar la API)
 

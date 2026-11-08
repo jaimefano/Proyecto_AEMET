@@ -1,0 +1,25 @@
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <h1 class="h3 mb-3">Recuperar contraseña</h1>
+    <p class="text-muted">Escribe el email de tu cuenta. Te enviaremos un correo con un enlace para elegir una contraseña nueva.</p>
+
+  {{#si errores}}
+    <div class="alert alert-danger" role="alert">
+      <ul class="mb-0">
+        {{#cada errores}}<li>{{.}}</li>{{/cada}}
+      </ul>
+    </div>
+  {{/si}}
+
+    <form method="post" action="recuperar.php">
+      <input type="hidden" name="csrf" value="{{csrf}}">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{email}}" maxlength="255" required autofocus>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Enviarme el enlace</button>
+    </form>
+
+    <p class="mt-3"><a href="login.php">Volver a iniciar sesión</a></p>
+  </div>
+</div>

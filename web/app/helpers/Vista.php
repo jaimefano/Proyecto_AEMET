@@ -15,13 +15,29 @@ final class Vista
             'nombreApp'    => $nombreApp,
             'tituloPagina' => $titulo !== '' ? $titulo . ' · ' . $nombreApp : $nombreApp,
             'aviso'        => Sesion::tomarAviso(),
+            'exito'        => Sesion::tomarExito(),
             'usuario'      => $usuario,
+            'esAdmin'      => Sesion::esAdministrador(),
+            'csrf'         => Sesion::tokenCsrf(),
         ];
         $datos = array_merge($comunes, $datos);
 
         echo self::cargar('layout/header', $datos)
            . self::cargar($vista, $datos)
            . self::cargar('layout/footer', $datos);
+    }
+
+    // Rellena una vista sin cabecera ni pie (p. ej. el cuerpo de un email) y devuelve el HTML.
+    public static function fragmento(string $vista, array $datos = []): string
+    {
+        return self::cargar($vista, $datos);
+    }
+
+    // Redirige a otra página (patrón "post/redirect/get": tras un POST correcto nunca se repinta la página).
+    public static function redirigir(string $ruta): never
+    {
+        header('Location: ' . $ruta);
+        exit;
     }
 
     // Lee una plantilla .html y la rellena con los datos.

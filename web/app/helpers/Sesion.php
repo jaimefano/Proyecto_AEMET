@@ -15,7 +15,6 @@ final class Sesion
 
         if (self::haCaducado()) {
             self::cerrar();
-            session_start();
             $_SESSION['aviso'] = 'Tu sesión ha caducado por inactividad. Vuelve a identificarte.';
         }
         if (self::estaIdentificado()) {
@@ -45,14 +44,12 @@ final class Sesion
         $_SESSION['ultima_actividad'] = time();
     }
 
+    // Cierra la sesión del usuario. Deja una sesión nueva y vacía (con otro identificador), de modo que
+    // se puede mostrar un mensaje en la página siguiente ("has cerrado la sesión", "sesión caducada"...).
     public static function cerrar(): void
     {
         $_SESSION = [];
-        if (ini_get('session.use_cookies')) {
-            $p = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 3600, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
-        }
-        session_destroy();
+        session_regenerate_id(true);   // borra la sesión anterior y envía al navegador la cookie nueva
     }
 
     public static function estaIdentificado(): bool
@@ -76,5 +73,59 @@ final class Sesion
         $aviso = $_SESSION['aviso'] ?? null;
         unset($_SESSION['aviso']);
         return $aviso;
+    }
+
+    // ---- Mensajes de una sola vez (se muestran en la siguiente página y se borran) ----
+
+    public static function ponerAviso(string $texto): void
+    {
+        $_SESSION['aviso'] = $texto;
+    }
+
+    public static function ponerExito(string $texto): void
+    {
+        $_SESSION['exito'] = $texto;
+    }
+
+    public static function tomarExito(): ?string
+    {
+        $exito = $_SESSION['exito'] ?? null;
+        unset($_SESSION['exito']);
+        return $exito;
+    }
+
+    // ---- Protección de páginas ----
+
+    // Páginas privadas: si no hay sesión, se envía al usuario a identificarse.
+    public static function exigirIdentificado(): void
+    {
+        if (!self::estaIdentificado()) {
+            $_SESSION['aviso'] ??= 'Debes iniciar sesión para acceder a esa página.';
+            Vista::redirigir('login.php');
+        }
+    }
+
+    public static function exigirAdministrador(): void
+    {
+        self::exigirIdentificado();
+        if (!self::esAdministrador()) {
+            self::ponerAviso('No tienes permiso para acceder a la administración.');
+            Vista::redirigir('index.php');
+        }
+    }
+
+    // ---- Protección CSRF de los formularios (cada formulario POST lleva este token) ----
+
+    public static function tokenCsrf(): string
+    {
+        if (empty($_SESSION['csrf'])) {
+            $_SESSION['csrf'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['csrf'];
+    }
+
+    public static function validarCsrf(string $token): bool
+    {
+        return $token !== '' && hash_equals(self::tokenCsrf(), $token);
     }
 }

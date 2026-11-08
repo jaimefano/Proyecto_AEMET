@@ -1,0 +1,55 @@
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <h1 class="h3 mb-3">Mi perfil</h1>
+
+  {{#si errores}}
+    <div class="alert alert-danger" role="alert">
+      <ul class="mb-0">
+        {{#cada errores}}<li>{{.}}</li>{{/cada}}
+      </ul>
+    </div>
+  {{/si}}
+
+    <form method="post" action="perfil.php">
+      <input type="hidden" name="csrf" value="{{csrf}}">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="nick" class="form-label">Nombre de usuario</label>
+          <input type="text" class="form-control" id="nick" value="{{nick}}" disabled>
+          <div class="form-text">No se puede cambiar. Tipo de usuario: {{rol}}. Alta: {{alta}}.</div>
+        </div>
+        <div class="col-md-6">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" name="email" value="{{valores.email}}" maxlength="255" required>
+        </div>
+        <div class="col-md-6">
+          <label for="nombre" class="form-label">Nombre</label>
+          <input type="text" class="form-control" id="nombre" name="nombre" value="{{valores.nombre}}" maxlength="100" required>
+        </div>
+        <div class="col-md-6">
+          <label for="apellidos" class="form-label">Apellidos</label>
+          <input type="text" class="form-control" id="apellidos" name="apellidos" value="{{valores.apellidos}}" maxlength="150" required>
+        </div>
+        <div class="col-md-6">
+          <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
+          <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento"
+                 value="{{valores.fecha_nacimiento}}" min="1900-01-01" max="{{hoy}}" required>
+          <div class="form-text">Edad actual: {{edad}} años.</div>
+        </div>
+        <div class="col-md-6">
+          <label for="telefono" class="form-label">Teléfono</label>
+          <input type="tel" class="form-control" id="telefono" name="telefono" value="{{valores.telefono}}"
+                 pattern="\+?[0-9]{9,15}" required>
+          <div class="form-text">De 9 a 15 cifras, sin espacios (puede empezar por +).</div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary mt-4">Guardar cambios</button>
+    </form>
+
+    <hr class="my-4">
+    <p>
+      <a class="btn btn-outline-secondary" href="cambiar_password.php">Cambiar contraseña</a>
+      <a class="btn btn-outline-danger" href="baja.php">Darme de baja</a>
+    </p>
+  </div>
+</div>
